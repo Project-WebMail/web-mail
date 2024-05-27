@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package deu.cse.spring_webmail.control;
 
 import deu.cse.spring_webmail.model.Pop3Agent;
@@ -42,6 +38,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @PropertySource("classpath:/system.properties")
 @Slf4j
 public class SystemController {
+
+    final String JdbcDriver = "com.mysql.cj.jdbc.Driver";
+    final String JdbcUrl = "jdbc:mysql://localhost:3306/mail?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8";
+    final String User = "jdbctester";
+    final String Password = "znqk0419";
 
     @Autowired
     private ServletContext ctx;
@@ -119,8 +120,8 @@ public class SystemController {
     public String loginFail() {
         return "login_fail";
     }
-    
-        //회원가입 페이지 컨트롤러
+
+    //회원가입 페이지 컨트롤러
     @GetMapping("/join")
     public String addJoin() {
         return "join";
@@ -146,13 +147,13 @@ public class SystemController {
     }
 
     @PostMapping("/join.do")
-    public String addJoinDo(@RequestParam String username, @RequestParam String userid, @RequestParam String passwd, @RequestParam String repasswd, 
+    public String addJoinDo(@RequestParam String username, @RequestParam String userid, @RequestParam String passwd, @RequestParam String repasswd,
             Model model, RedirectAttributes attrs) {
-       
+
         try {
             String cwd = ctx.getRealPath(".");
-        UserAdminAgent agent = new UserAdminAgent(JAMES_HOST, JAMES_CONTROL_PORT, cwd,
-                ROOT_ID, ROOT_PASSWORD, ADMINISTRATOR);
+            UserAdminAgent agent = new UserAdminAgent(JAMES_HOST, JAMES_CONTROL_PORT, cwd,
+                    ROOT_ID, ROOT_PASSWORD, ADMINISTRATOR);
 
             if (agent.joinIdCheck(userid)) {
                 //이미 해당 데이터가 있음
@@ -166,11 +167,13 @@ public class SystemController {
                 log.debug("아이디 중복 없음");
 
                 if ((passwd == null ? repasswd == null : passwd.equals(repasswd))) {
-                    
-                    if(agent.addUser(userid, passwd)){
-                        attrs.addFlashAttribute("msg", String.format("사용자(%s)의 회원가입이 완료되었습니다!", userid));
+
+                    if (agent.addUser(userid, passwd)) {
+                        if (agent.updateUserNick(userid, username)) {
+                            attrs.addFlashAttribute("msg", String.format("사용자(%s)의 회원가입이 완료되었습니다!", userid));
+                        }
                     }
-                    
+
                 } else {
                     log.debug("비밀번호 유효성 검사 실패");
                     model.addAttribute("popupMessage", "비밀번호가 같지 않습니다.");
@@ -295,9 +298,9 @@ public class SystemController {
 
     /**
      * https://34codefactory.wordpress.com/2019/06/16/how-to-display-image-in-jsp-using-spring-code-factory/
-     * 
+     *
      * @param imageName
-     * @return 
+     * @return
      */
     @RequestMapping(value = "/get_image/{imageName}")
     @ResponseBody
@@ -317,7 +320,7 @@ public class SystemController {
         byte[] imageInByte;
         try {
             byteArrayOutputStream = new ByteArrayOutputStream();
-            bufferedImage = ImageIO.read(new File(folderPath + File.separator + imageName) );
+            bufferedImage = ImageIO.read(new File(folderPath + File.separator + imageName));
             String format = imageName.substring(imageName.lastIndexOf(".") + 1);
             ImageIO.write(bufferedImage, format, byteArrayOutputStream);
             byteArrayOutputStream.flush();
