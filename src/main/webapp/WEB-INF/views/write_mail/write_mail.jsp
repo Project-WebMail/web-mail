@@ -25,36 +25,26 @@
 
         <div id="main">
             <%-- <jsp:include page="mail_send_form.jsp" /> --%>
-            <form enctype="multipart/form-data" method="POST" action="write_mail.do" >
+            <form id="mailForm" enctype="multipart/form-data" method="POST" action="write_mail.do" >
                 <table>
                     <tr>
                         <td> 수신 </td>
-                        <td> <input type="text" name="to" size="80"
-                                    value="${!empty param['sender'] ? param['sender'] : ''}"
-            <!--    value=<%=request.getParameter("recv") == null ? "" : request.getParameter("recv")%>  -->
-                        </td>
+                        <td> <input type="text" name="to" size="80" value="${mailData.to}"> </td>
                     </tr>
                     <tr>
                         <td>참조</td>
-                        <td> <input type="text" name="cc" size="80">  </td>
+                        <td> <input type="text" name="cc" size="80" value="${mailData.cc}">  </td>
                     </tr>
                     <tr>
                         <td> 메일 제목 </td>
-                        <td> <input type="text" name="subj" size="80" 
-                                    value="${!empty param['sender'] ? "RE: " += sessionScope['subject'] : ''}" >  </td>
+                        <td> <input type="text" name="subj" size="80" value="${mailData.subject}">  </td>
                     </tr>
                     <tr>
                         <td colspan="2">본  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 문</td>
                     </tr>
                     <tr>  <%-- TextArea    --%>
                         <td colspan="2">
-                            <textarea rows="15" name="body" cols="80">${!empty param['sender'] ?
-"
-
-
-
-----
-" += sessionScope['body'] : ''}</textarea> 
+                            <textarea rows="15" name="body" cols="80">${mailData.body}</textarea> 
                         </td>
                     </tr>
                     <tr>
@@ -69,8 +59,35 @@
                     </tr>
                 </table>
             </form>
+            <form id="saveForm" enctype="multipart/form-data" method="POST" action="savePoint.do" >
+                <button class="btn btn-dark" style="width: 50%; margin-top: 10px; margin-left: 25%" type="button" onclick="submitSaveForm()">임시저장하기</button><br>
+                <!-- 여기서 hidden input 요소를 사용하여 맨 위의 form의 데이터를 받아올 수 있습니다. -->
+                <input type="hidden" name="to" />
+                <input type="hidden" name="cc" />
+                <input type="hidden" name="subj" />
+                <input type="hidden" name="body" />
+                <input type="hidden" name="file1" />
+            </form>
+            <form enctype="multipart/form-data" method="POST" action="saveCall.do" >
+                <button class="btn btn-dark" style="width: 50%; margin-top: 10px; margin-left: 25%">임시저장 불러오기</button><br>
+            </form>
         </div>
-
         <%@include file="../footer.jspf"%>
+
+        <script>
+            function submitSaveForm() {
+                // 맨 위의 form에서 데이터를 가져와 두 번째 form에 설정합니다.
+                var mailForm = document.getElementById("mailForm");
+                var saveForm = document.getElementById("saveForm");
+                saveForm.elements["to"].value = mailForm.elements["to"].value;
+                saveForm.elements["cc"].value = mailForm.elements["cc"].value;
+                saveForm.elements["subj"].value = mailForm.elements["subj"].value;
+                saveForm.elements["body"].value = mailForm.elements["body"].value;
+                saveForm.elements["file1"].value = mailForm.elements["file1"].value;
+                // 두 번째 form을 서버로 제출합니다.
+                saveForm.submit();
+            }
+        </script>
+
     </body>
 </html>
