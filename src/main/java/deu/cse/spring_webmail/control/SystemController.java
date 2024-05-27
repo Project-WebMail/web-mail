@@ -171,6 +171,7 @@ public class SystemController {
                     if (agent.addUser(userid, passwd)) {
                         if (agent.updateUserNick(userid, username)) {
                             attrs.addFlashAttribute("msg", String.format("사용자(%s)의 회원가입이 완료되었습니다!", userid));
+
                         }
                     }
 
@@ -263,7 +264,7 @@ public class SystemController {
      * @param attrs
      * @return
      */
-    @PostMapping("delete_user.do")
+    @PostMapping("delete_user.do") //수정
     public String deleteUserDo(@RequestParam String[] selectedUsers, RedirectAttributes attrs) {
         log.debug("delete_user.do: selectedUser = {}", List.of(selectedUsers));
 
@@ -294,6 +295,170 @@ public class SystemController {
     @GetMapping("/img_test")
     public String imgTest() {
         return "img_test/img_test";
+    }
+
+    //주소록 보여주기
+    @GetMapping("/addrbook")
+    public String showAddrBook() {
+        return "addr/addrbook";
+    }
+
+    //주소록 추가
+    @GetMapping("/add_addr")
+    public String addAddr() {
+        return "addr/add_addr";
+    }
+
+    //주소록 추가
+    @PostMapping("/addinsert.do")
+    public String addAddrDo(@RequestParam String addr_id, @RequestParam String addr_nick, RedirectAttributes attrs) {
+
+        String userid = (String) session.getAttribute("userid");
+
+        log.debug("addinsert.do: send_name = {}, addr_id = {}, addr_nick = {}", userid, addr_id, addr_nick);
+
+        Connection conn = null;
+        PreparedStatement pStmt = null;
+
+        try {
+            Class.forName(JdbcDriver);
+            conn = DriverManager.getConnection(JdbcUrl, User, Password);
+
+            String sql = "INSERT INTO addrbook (send_name, receive_name, nick_name) VALUES (?, ?, ?)";
+            pStmt = conn.prepareStatement(sql);
+
+            pStmt.setString(1, userid);
+            pStmt.setString(2, addr_id);
+            pStmt.setString(3, addr_nick);
+
+            int rowsAffected = pStmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                attrs.addFlashAttribute("msg", String.format("주소록에 사용자(%s) 추가에 성공하였습니다.", addr_id));
+            } else {
+                attrs.addFlashAttribute("msg", "주소록 사용자 추가에 실패했습니다.");
+            }
+
+        } catch (Exception ex) {
+            log.error("addAddrDo: 시스템 접속에 실패했습니다. 예외 = {}", ex.getMessage());
+            attrs.addFlashAttribute("msg", "주소록 사용자 추가에 실패했습니다.");
+        } finally {
+            try {
+                if (pStmt != null) {
+                    pStmt.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (Exception e) {
+                log.error("addAddrDo: 리소스를 닫는 중에 오류가 발생했습니다. 예외 = {}", e.getMessage());
+            }
+        }
+
+        return "redirect:/addrbook";
+    }
+
+    //주소록 상세 보여주기
+    @GetMapping("/detail_addr")
+    public String detailAddr(@RequestParam String receive_name, @RequestParam String nick_name, Model model) {
+        model.addAttribute("receive_name", receive_name);
+        model.addAttribute("nick_name", nick_name);
+        return "addr/detail_addr";
+    }
+
+    // 주소록 업데이트
+    @PostMapping("/update_addr.do")
+    public String updateAddrDo(@RequestParam String receive_name, @RequestParam String nick_name, RedirectAttributes attrs) {
+        log.debug("update_addr.do: addr_id = {}, addr_nick = {}", receive_name, nick_name);
+
+        Connection conn = null;
+        PreparedStatement pStmt = null;
+
+        String userid = (String) session.getAttribute("userid");
+
+        try {
+            Class.forName(JdbcDriver);
+            conn = DriverManager.getConnection(JdbcUrl, User, Password);
+
+            String sql = "UPDATE addrbook SET nick_name = ? WHERE send_name = ? AND receive_name = ?";
+            pStmt = conn.prepareStatement(sql);
+
+            pStmt.setString(1, nick_name);
+            pStmt.setString(2, userid);
+            pStmt.setString(3, receive_name );
+
+            int rowsAffected = pStmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                attrs.addFlashAttribute("msg", String.format("주소록 사용자(%s) 정보 수정에 성공하였습니다.", receive_name));
+            } else {
+                attrs.addFlashAttribute("msg", "주소록 사용자 정보 수정에 실패했습니다.");
+            }
+
+        } catch (Exception ex) {
+            log.error("updateAddrDo: 시스템 접속에 실패했습니다. 예외 = {}", ex.getMessage());
+            attrs.addFlashAttribute("msg", "주소록 사용자 정보 수정에 실패했습니다.");
+        } finally {
+            try {
+                if (pStmt != null) {
+                    pStmt.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (Exception e) {
+                log.error("updateAddrDo: 리소스를 닫는 중에 오류가 발생했습니다. 예외 = {}", e.getMessage());
+            }
+        }
+
+        return "redirect:/addrbook";
+    }
+
+    // 주소록 삭제
+    @PostMapping("/delete_addr.do")
+    public String deleteAddrDo(@RequestParam String receive_name, RedirectAttributes attrs) {
+        log.debug("delete_addr.do: email = {}", receive_name);
+
+        Connection conn = null;
+        PreparedStatement pStmt = null;
+
+        String userid = (String) session.getAttribute("userid");
+
+        try {
+            Class.forName(JdbcDriver);
+            conn = DriverManager.getConnection(JdbcUrl, User, Password);
+
+            String sql = "DELETE FROM addrbook WHERE send_name = ? AND receive_name = ?";
+            pStmt = conn.prepareStatement(sql);
+
+            pStmt.setString(1, userid);
+            pStmt.setString(2, receive_name);
+
+            int rowsAffected = pStmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                attrs.addFlashAttribute("msg", "주소록 사용자 정보 삭제에 성공했습니다.");
+            } else {
+                attrs.addFlashAttribute("msg", "주소록 사용자 정보 삭제에 실패했습니다.");
+            }
+
+        } catch (Exception ex) {
+            log.error("deleteAddrDo: 시스템 접속에 실패했습니다. 예외 = {}", ex.getMessage());
+            attrs.addFlashAttribute("msg", "주소록 사용자 정보 삭제에 실패했습니다.");
+        } finally {
+            try {
+                if (pStmt != null) {
+                    pStmt.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (Exception e) {
+                log.error("deleteAddrDo: 리소스를 닫는 중에 오류가 발생했습니다. 예외 = {}", e.getMessage());
+            }
+        }
+
+        return "redirect:/addrbook";
     }
 
     /**
