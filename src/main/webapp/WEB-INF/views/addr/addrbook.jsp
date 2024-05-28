@@ -20,27 +20,27 @@
                 </tr>
             </thead>
             <tbody>
-                <% 
-        final String JdbcDriver = "com.mysql.cj.jdbc.Driver";
-        final String JdbcUrl = "jdbc:mysql://localhost:3306/mail?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8";
-        final String User = "jdbctester";
-        final String Password = "znqk0419";
+                <%
+                final String JdbcDriver = "com.mysql.cj.jdbc.Driver";
+                final String JdbcUrl = "jdbc:mysql://localhost:3306/mail?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8";
+                final String User = "jdbctester";
+                final String Password = "znqk0419";
+                String userid = (String) session.getAttribute("userid");
+
                 
-                    try{
-                        Class.forName(JdbcDriver);
-                    
-                        Connection conn = DriverManager.getConnection(JdbcUrl,User,Password);
-                    
-                        Statement stmt= conn.createStatement();
-                    
-                        String sql = "SELECT receive_name, nick_name FROM addrbook"; 
-  
-                        ResultSet rs = stmt.executeQuery(sql);
-                        
-                        
-                        
-                        while (rs.next()){
-                %>
+                try {
+                    Class.forName(JdbcDriver);
+
+                    Connection conn = DriverManager.getConnection(JdbcUrl, User, Password);
+
+                    String sql = "SELECT receive_name, nick_name FROM addrbook WHERE send_name = ?"; 
+                    PreparedStatement pStmt = conn.prepareStatement(sql);
+                    pStmt.setString(1, userid);
+
+                    ResultSet rs = pStmt.executeQuery();
+
+                    while (rs.next()) {
+%>
                 <tr>
                     <td><a href="detail_addr?receive_name=<%=rs.getString("receive_name")%>&nick_name=<%=rs.getString("nick_name")%>"><%=rs.getString("receive_name")%></a></td>
                     <td><%=rs.getString("nick_name")%></td>
@@ -49,7 +49,7 @@
                 <%
                         }
                         rs.close();
-                        stmt.close();
+                        pStmt.close();
                         conn.close();
                     } catch (Exception ex){
                         out.println("오류가 발생했습니다. (발생 오류: " + ex.getMessage() + ")");

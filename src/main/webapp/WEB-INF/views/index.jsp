@@ -35,6 +35,17 @@
  
     </form>
 </div>
+        
+    <script> var popupsuccess = "${popupsuccess}";
+                if (popupsuccess.trim() !== "") {
+                    alert(popupsuccess);
+                    }
+                            
+                var popupexit= "${popupexit}";
+                if (popupexit.trim() !== "") {
+                    alert(popupexit);
+                    }
+            </script>        
 
                
 

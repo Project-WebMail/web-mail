@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpSession;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -170,8 +171,9 @@ public class SystemController {
 
                     if (agent.addUser(userid, passwd)) {
                         if (agent.updateUserNick(userid, username)) {
-                            attrs.addFlashAttribute("msg", String.format("사용자(%s)의 회원가입이 완료되었습니다!", userid));
+                            model.addAttribute("popupsuccess", String.format("사용자(%s)의 회원가입이 완료되었습니다!", userid));
 
+                            return "index";
                         }
                     }
 
@@ -187,7 +189,7 @@ public class SystemController {
             log.error("join.do: 시스템 접속에 실패했습니다. 예외 = {}", ex.getMessage());
         }
 
-        return "index";
+        return "redirect:/index";
     }
 
     protected boolean isAdmin(String userid) {
@@ -278,6 +280,49 @@ public class SystemController {
         }
 
         return "redirect:/admin_menu";
+    }
+
+     @PostMapping("delete_info.do")
+    public String deleteInfoDo(RedirectAttributes attrs, Model model) {
+        String userid = (String) session.getAttribute("userid");
+
+        log.debug("delete_info.do: user = {}", userid);
+
+        try (Connection conn = DriverManager.getConnection(JdbcUrl, User, Password)) {
+            // 받은 메일 삭제
+            String deleteEmailsSql = "DELETE FROM inbox WHERE repository_name = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(deleteEmailsSql)) {
+                stmt.setString(1, userid);
+                stmt.executeUpdate();
+            }
+
+            // 임시보관 메일 삭제
+            String deleteDraftsSql = "DELETE FROM savefile WHERE userid = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(deleteDraftsSql)) {
+                stmt.setString(1, userid);
+                stmt.executeUpdate();
+            }
+
+            // 주소록 삭제
+            String deleteAddressBookSql = "DELETE FROM addrbook WHERE  send_name = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(deleteAddressBookSql)) {
+                stmt.setString(1, userid);
+                stmt.executeUpdate();
+            }
+            
+            String deleteUsersSql = "DELETE FROM users WHERE username = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(deleteUsersSql)) {
+                stmt.setString(1, userid);
+                stmt.executeUpdate();
+            }
+
+            model.addAttribute("popupexit", String.format("사용자(%s)의 정보를 정상적으로 삭제하고, 탈퇴하였습니다.", userid));
+        } catch (SQLException e) {
+            log.error("Error deleting user data", e);
+            attrs.addFlashAttribute("msg", "사용자의 데이터 삭제 중 오류가 발생했습니다.");
+        }
+
+        return "index";
     }
 
     private List<String> getUserList() {
@@ -385,7 +430,7 @@ public class SystemController {
 
             pStmt.setString(1, nick_name);
             pStmt.setString(2, userid);
-            pStmt.setString(3, receive_name );
+            pStmt.setString(3, receive_name);
 
             int rowsAffected = pStmt.executeUpdate();
 

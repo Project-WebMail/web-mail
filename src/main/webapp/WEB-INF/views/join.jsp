@@ -50,10 +50,6 @@
                 if (popupid.trim() !== "") {
                     alert(popupid);
                 }
-                var popupsuccess = "${popupsuccess}";
-                if (popupsuccess.trim() !== "") {
-                    alert(popupsuccess);
-                }
             </script>
 
 
