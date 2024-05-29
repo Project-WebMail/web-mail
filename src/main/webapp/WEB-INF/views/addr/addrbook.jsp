@@ -7,9 +7,21 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>주소록 보기</title>
+                <link type="text/css" rel="stylesheet" href="css/main_style.css" />
+                                <link type="text/css" rel="stylesheet" href="css/addrbook.css" />
     </head>
     <body>
-        <h1>주소록</h1>
+        
+                <div id="sidebar">
+            <jsp:include page="../sidebar_previous_menu.jsp" />
+            
+                    <!-- 주소록 추가 버튼 -->
+        <p style="margin-top: 50px;"><a href="add_addr"><button>주소록 추가</button></a> </p>
+         </div>
+         
+         
+         <div id="main">
+             <h1>주소록</h1>
         <hr />
 
         <table border="1">
@@ -58,10 +70,13 @@
             </tbody>
         </table>
         <br><br>
-        <!-- 주소록 추가 버튼 -->
-        <p style="margin-top: 10px;"><a href="add_addr"><button>주소록 추가</button></a> </p>
+        
+        
 
 
+
+         </div>
+        
 
 
 

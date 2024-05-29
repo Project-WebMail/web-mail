@@ -1,0 +1,45 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css to edit this template
+*/
+/* 
+    Created on : 2022. 6. 10., 오후 2:39:47
+    Author     : skylo
+*/
+
+@import "reset.css";
+
+
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #ece9e4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+#join_form {
+    width: auto;
+    height: auto;
+    padding: 150px;
+    background-color:#88b7f5;
+    border-radius: 30px;
+    box-shadow: 3px 3px 3px 3px gray;
+    font-weight: bold;
+    
+        animation: zoomIn;
+  animation-duration: 1s;
+}
+
+#FormTitle {
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    color: #F2F2F2;
+    font-size: 40px;
+    margin-bottom: 30px
+}

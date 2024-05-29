@@ -121,6 +121,12 @@ public class SystemController {
     public String loginFail() {
         return "login_fail";
     }
+    
+         //index 페이지 컨트롤러
+    @GetMapping("/index")
+    public String addIndex() {
+        return "index";
+    }
 
     //회원가입 페이지 컨트롤러
     @GetMapping("/join")

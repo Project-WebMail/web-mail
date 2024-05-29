@@ -31,7 +31,6 @@
 
 
         <div id="main">
-            <h2> 메일 사용자 목록 </h2>
             <!-- 아래 코드는 위와 같이 Java Beans와 JSTL을 이용하는 코드로 바꾸어져야 함 -->
 
             <!--  HTML 문법에서는 EL 표현식 사용 가능
@@ -48,11 +47,18 @@
         </ul>
             -->
 
-            <ul>
+            <div class="container">
+            <div class="row justify-content-center">
+                <div class="center"> <!-- 가운데 정렬을 위한 추가 -->
+                    <h2> 메일 사용자 목록 </h2>
+                    <ul>
                 <c:forEach items="${userList}" var="user">
                     <li> ${user} </li>
                     </c:forEach>
             </ul>
+                </div>
+            </div>
+        </div>
         </div>
 
         <%@include file="../footer.jspf" %>
