@@ -151,6 +151,14 @@ public class SystemController {
     public String addJoinDo(@RequestParam String username, @RequestParam String userid, @RequestParam String passwd, @RequestParam String repasswd,
             Model model, RedirectAttributes attrs) {
 
+        if (username == null || username.trim().isEmpty()
+            || userid == null || userid.trim().isEmpty()
+            || passwd == null || passwd.trim().isEmpty()
+            || repasswd == null || repasswd.trim().isEmpty()) {
+            model.addAttribute("popupblank", "공백은 입력할 수 없습니다.");
+            return "join";
+        }
+
         try {
             String cwd = ctx.getRealPath(".");
             UserAdminAgent agent = new UserAdminAgent(JAMES_HOST, JAMES_CONTROL_PORT, cwd,
@@ -282,7 +290,7 @@ public class SystemController {
         return "redirect:/admin_menu";
     }
 
-     @PostMapping("delete_info.do")
+    @PostMapping("delete_info.do")
     public String deleteInfoDo(RedirectAttributes attrs, Model model) {
         String userid = (String) session.getAttribute("userid");
 
@@ -309,7 +317,7 @@ public class SystemController {
                 stmt.setString(1, userid);
                 stmt.executeUpdate();
             }
-            
+
             String deleteUsersSql = "DELETE FROM users WHERE username = ?";
             try (PreparedStatement stmt = conn.prepareStatement(deleteUsersSql)) {
                 stmt.setString(1, userid);
