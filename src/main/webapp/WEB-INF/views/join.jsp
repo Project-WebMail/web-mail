@@ -50,6 +50,10 @@
                 if (popupid.trim() !== "") {
                     alert(popupid);
                 }
+                var popupblank = "${popupblank}";
+                if (popupblank.trim() !== "") {
+                    alert(popupblank);
+                }
             </script>
 
 
