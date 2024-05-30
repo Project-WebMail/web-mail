@@ -204,7 +204,7 @@ public class WriteController {
                 
                 String messageReceiver = rs.getString("message_receiver");
                 if (messageReceiver == ""|| messageReceiver.isEmpty()) {
-                    mailData.setTo("<발신자없음>");
+                    mailData.setTo("<수신자없음>");
                 } else {
                     mailData.setTo(messageReceiver);
                 }
