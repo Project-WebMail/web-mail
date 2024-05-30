@@ -6,10 +6,12 @@
     <head>
         <title>임시 저장된 데이터</title>
         <link type="text/css" rel="stylesheet" href="css/main_style.css" />
+                <link type="text/css" rel="stylesheet" href="css/savemail.css" />
     </head>
     <body>
         <%@include file="header.jspf" %>
-
+        
+        
         <div id="main">
             <h2>임시저장 보관함</h2>
             <table border="1">

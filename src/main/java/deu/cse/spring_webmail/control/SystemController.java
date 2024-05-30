@@ -71,6 +71,12 @@ public class SystemController {
 
         return "/index";
     }
+    
+    //index 페이지 컨트롤러
+    @GetMapping("/index")
+    public String addIndex() {
+        return "index";
+    }
 
     @RequestMapping(value = "/login.do", method = {RequestMethod.GET, RequestMethod.POST})
     public String loginDo(@RequestParam Integer menu) {
@@ -121,12 +127,6 @@ public class SystemController {
     public String loginFail() {
         return "login_fail";
     }
-    
-         //index 페이지 컨트롤러
-    @GetMapping("/index")
-    public String addIndex() {
-        return "index";
-    }
 
     //회원가입 페이지 컨트롤러
     @GetMapping("/join")
@@ -137,15 +137,12 @@ public class SystemController {
     @PostMapping("/joinId.do")
     public String joinIdDo(@RequestParam String userid, Model model) {
 
-        String cwd = ctx.getRealPath(".");
-        UserAdminAgent agent = new UserAdminAgent(JAMES_HOST, JAMES_CONTROL_PORT, cwd,
-                ROOT_ID, ROOT_PASSWORD, ADMINISTRATOR);
+        JoinValidation vali = new JoinValidation();
 
-        if (agent.joinIdCheck(userid)) {
+        if (vali.joinIdCheck(userid)) {
             //이미 해당 데이터가 있음
             //사용가능한 아이디라고 팝업
             model.addAttribute("popupid", "이미 사용하고 있는 ID 입니다!");
-
         } else {
             //중복 아이디 팝업
             model.addAttribute("popupid", "사용 가능한 ID 입니다!");
@@ -157,40 +154,43 @@ public class SystemController {
     public String addJoinDo(@RequestParam String username, @RequestParam String userid, @RequestParam String passwd, @RequestParam String repasswd,
             Model model, RedirectAttributes attrs) {
 
+        if (!JoinValidation.isNotBlank(username) || !JoinValidation.isNotBlank(userid)
+                || !JoinValidation.isNotBlank(passwd) || !JoinValidation.isNotBlank(repasswd)) {
+            model.addAttribute("popupblank", "공백은 입력할 수 없습니다.");
+            return "join";
+        }
+
         try {
             String cwd = ctx.getRealPath(".");
             UserAdminAgent agent = new UserAdminAgent(JAMES_HOST, JAMES_CONTROL_PORT, cwd,
                     ROOT_ID, ROOT_PASSWORD, ADMINISTRATOR);
 
-            if (agent.joinIdCheck(userid)) {
-                //이미 해당 데이터가 있음
+            JoinValidation vali = new JoinValidation();
+
+            if (vali.joinIdCheck(userid)) {
+                // 이미 해당 데이터가 있음
                 log.debug("아이디 존재 IF");
                 model.addAttribute("popupid", "이미 사용하고 있는 ID 입니다!");
-
                 return "join";
-
-            } else {
-                //사용 가능한 ID
-                log.debug("아이디 중복 없음");
-
-                if ((passwd == null ? repasswd == null : passwd.equals(repasswd))) {
-
-                    if (agent.addUser(userid, passwd)) {
-                        if (agent.updateUserNick(userid, username)) {
-                            model.addAttribute("popupsuccess", String.format("사용자(%s)의 회원가입이 완료되었습니다!", userid));
-
-                            return "index";
-                        }
-                    }
-
-                } else {
-                    log.debug("비밀번호 유효성 검사 실패");
-                    model.addAttribute("popupMessage", "비밀번호가 같지 않습니다.");
-                    return "join";
-                }
-
-                return "index";
             }
+
+            // 사용 가능한 ID
+            log.debug("아이디 중복 없음");
+
+            if (!JoinValidation.isPasswordValid(passwd, repasswd)) {
+                // 비밀번호 유효성 검사 실패
+                log.debug("비밀번호 유효성 검사 실패");
+                model.addAttribute("popupMessage", "비밀번호가 같지 않습니다.");
+                return "join";
+            }
+
+            if (agent.addUser(userid, passwd)) {
+                if (vali.updateUserNick(userid, username)) {
+                    model.addAttribute("popupsuccess", String.format("사용자(%s)의 회원가입이 완료되었습니다!", userid));
+                    return "index";
+                }
+            }
+
         } catch (Exception ex) {
             log.error("join.do: 시스템 접속에 실패했습니다. 예외 = {}", ex.getMessage());
         }
@@ -288,7 +288,7 @@ public class SystemController {
         return "redirect:/admin_menu";
     }
 
-     @PostMapping("delete_info.do")
+    @PostMapping("delete_info.do")
     public String deleteInfoDo(RedirectAttributes attrs, Model model) {
         String userid = (String) session.getAttribute("userid");
 
@@ -315,7 +315,7 @@ public class SystemController {
                 stmt.setString(1, userid);
                 stmt.executeUpdate();
             }
-            
+
             String deleteUsersSql = "DELETE FROM users WHERE username = ?";
             try (PreparedStatement stmt = conn.prepareStatement(deleteUsersSql)) {
                 stmt.setString(1, userid);

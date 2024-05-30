@@ -1,0 +1,72 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css to edit this template
+*/
+/* 
+    Created on : 2022. 6. 10., 오후 2:39:47
+    Author     : skylo
+*/
+
+
+
+
+
+
+        .center-table {
+            width: 90%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .center-table th, .center-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .center-table thead {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+ 
+        
+
+        .center-table input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .center-table input[type="submit"], .center-table button {
+            background-color: #3084F2;
+            color: white;
+            border: none;
+            width: 200px;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        #btndel {
+            background-color: #F28627;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+
+        .center-table td center {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }

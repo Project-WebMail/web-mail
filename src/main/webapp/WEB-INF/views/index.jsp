@@ -32,7 +32,6 @@
         <button type="submit" class="btn btn-dark" name="B1" style="width: 100%; margin-top: 10px;">로그인</button><br>
         <a href="join"><button type="button" class="btn btn-light" style="width: 100%; margin-top: 10px;">회원가입</button></a>
         
- 
     </form>
 </div>
         

@@ -10,6 +10,7 @@
     
                     <link type="text/css" rel="stylesheet" href="css/main_style.css" />
                                 <link type="text/css" rel="stylesheet" href="css/addaddr.css" />
+                                
     <script>
         function validateForm() {
             var ad_id = document.getElementsByName("addr_id")[0].value.trim();
@@ -58,9 +59,6 @@
             </div>
         </form>
             </div>
-            
-
-
 
 <br>
 <br>
