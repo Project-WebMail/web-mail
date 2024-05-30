@@ -7,24 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>주소록 추가</title>
     <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/my_style.css">
-    <style>
-        .center-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .center-table {
-            margin: 0 auto;
-        }
-        hr {
-            width: 100%;
-            border: none;
-            height: 1px;
-            background-color: #ccc; /* Adjust color as needed */
-            margin: 20px 0; /* Add some space above and below the line */
-        }
-
-    </style>
+    
+                    <link type="text/css" rel="stylesheet" href="css/main_style.css" />
+                                <link type="text/css" rel="stylesheet" href="css/addaddr.css" />
     <script>
         function validateForm() {
             var ad_id = document.getElementsByName("addr_id")[0].value.trim();
@@ -49,39 +34,33 @@
 
 <%@include file="../header.jspf"%>
 
-<div class="center-container">
-    <h1>주소록 추가</h1>
 
-    <hr />
-    <form action="addinsert.do" method="POST" onsubmit="return validateForm()">
-        <table border="0" class="center-table">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>사용자 ID</td>
-                    <td><input type="text" name="addr_id" size="20" /></td>
-                </tr>
-                <tr>
-                    <td>저장명</td>
-                    <td><input type="text" name="addr_nick" size="20" /></td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <center>
-                            <input type="submit" value="추가" />
-                            <button type="button" onclick="cancel()">취소</button>
-                        </center>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </form>
-</div>
+  <div id="sidebar">
+            <jsp:include page="../sidebar_previous_menu.jsp" />
+            
+
+         </div>
+            
+            
+            <div id="main">
+                
+                <h1>주소록 추가</h1>
+        <form action="addinsert.do" method="POST" onsubmit="return validateForm()">
+            <label for="addr_id">사용자 ID</label>
+            <input type="text" id="addr_id" name="addr_id" size="20" />
+
+            <label for="addr_nick">저장명</label>
+            <input type="text" id="addr_nick" name="addr_nick" size="20" />
+
+            <div class="button-group">
+                <input type="submit" value="추가" />
+                <button id="btn" type="button" onclick="cancel()">취소</button>
+            </div>
+        </form>
+            </div>
+            
+
+
 
 <br>
 <br>

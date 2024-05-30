@@ -26,7 +26,6 @@
         --%>
 		<p style="margin-top: 10px;"><a href="add_user"><button>사용자 추가</button></a> </p>
         <p style="margin-top: 10px;"><a href="delete_user"><button>사용자 제거</button></a> </p>
-        <p style="margin-top: 10px;"><a href=""><button>주소록 편집</button></a> </p>
         <p style="margin-top: 30px;"><a href="login.do?menu=<%= CommandType.LOGOUT %>"><button>로그아웃</button></a></p>
     </body>
 </html>
