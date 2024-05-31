@@ -1,5 +1,6 @@
 package deu.cse.spring_webmail.control;
 
+import deu.cse.spring_webmail.model.UserDeleteInfo;
 import deu.cse.spring_webmail.model.Pop3Agent;
 import deu.cse.spring_webmail.model.UserAdminAgent;
 import java.awt.image.BufferedImage;
@@ -288,40 +289,15 @@ public class SystemController {
         return "redirect:/admin_menu";
     }
 
-    @PostMapping("delete_info.do")
+   @PostMapping("delete_info.do")
     public String deleteInfoDo(RedirectAttributes attrs, Model model) {
         String userid = (String) session.getAttribute("userid");
 
         log.debug("delete_info.do: user = {}", userid);
 
-        try (Connection conn = DriverManager.getConnection(JdbcUrl, User, Password)) {
-            // 받은 메일 삭제
-            String deleteEmailsSql = "DELETE FROM inbox WHERE repository_name = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(deleteEmailsSql)) {
-                stmt.setString(1, userid);
-                stmt.executeUpdate();
-            }
-
-            // 임시보관 메일 삭제
-            String deleteDraftsSql = "DELETE FROM savefile WHERE userid = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(deleteDraftsSql)) {
-                stmt.setString(1, userid);
-                stmt.executeUpdate();
-            }
-
-            // 주소록 삭제
-            String deleteAddressBookSql = "DELETE FROM addrbook WHERE  send_name = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(deleteAddressBookSql)) {
-                stmt.setString(1, userid);
-                stmt.executeUpdate();
-            }
-
-            String deleteUsersSql = "DELETE FROM users WHERE username = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(deleteUsersSql)) {
-                stmt.setString(1, userid);
-                stmt.executeUpdate();
-            }
-
+        try {
+            UserDeleteInfo del = new UserDeleteInfo();
+            del.deleteUserInfo(userid);
             model.addAttribute("popupexit", String.format("사용자(%s)의 정보를 정상적으로 삭제하고, 탈퇴하였습니다.", userid));
         } catch (SQLException e) {
             log.error("Error deleting user data", e);
@@ -330,6 +306,7 @@ public class SystemController {
 
         return "index";
     }
+    
 
     private List<String> getUserList() {
         String cwd = ctx.getRealPath(".");
