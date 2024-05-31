@@ -6,6 +6,7 @@ package deu.cse.spring_webmail.control;
 
 import deu.cse.spring_webmail.model.SaveModel;
 import deu.cse.spring_webmail.model.SmtpAgent;
+import deu.cse.spring_webmail.service.SaveMail;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -58,6 +59,8 @@ public class WriteController {
     private ServletContext ctx;
     @Autowired
     private HttpSession session;
+    
+    SaveMail smail = new SaveMail();
 
     @GetMapping("/write_mail")
     public String writeMail() {
@@ -172,58 +175,10 @@ public class WriteController {
         return "redirect:/save_mail";
     }
 
-    @GetMapping("/save_mail")
+@GetMapping("/save_mail")
     public String loadSavedData(Model model) {
         String userid = (String) session.getAttribute("userid");
-        List<SaveModel> savedData = new ArrayList<>();
-
-        log.debug("loadSavedData 호출");
-
-        try {
-            Class.forName(JdbcDriver);
-            Connection conn = DriverManager.getConnection(JdbcUrl, User, Password);
-
-            String sql = "SELECT save_number, message_receiver, message_title, save_time FROM savefile WHERE userid = ?";
-            PreparedStatement pStmt = conn.prepareStatement(sql);
-            pStmt.setString(1, userid);
-
-            ResultSet rs = pStmt.executeQuery();
-
-            while (rs.next()) {
-                SaveModel mailData = new SaveModel();
-                mailData.setSaveNumber(rs.getInt("save_number"));
-                mailData.setTo(rs.getString("message_receiver"));
-                mailData.setTimestamp(rs.getTimestamp("save_time"));
-
-                String messageTitle = rs.getString("message_title");
-                if (messageTitle == ""|| messageTitle.isEmpty()) {
-                    mailData.setSubject("<제목없음>");
-                } else {
-                    mailData.setSubject(messageTitle);
-                }
-                
-                String messageReceiver = rs.getString("message_receiver");
-                if (messageReceiver == ""|| messageReceiver.isEmpty()) {
-                    mailData.setTo("<수신자없음>");
-                } else {
-                    mailData.setTo(messageReceiver);
-                }
-
-                savedData.add(mailData);
-
-                log.debug("mailData: save_number = {}, receiver = {}, title = {}",
-                        mailData.getSaveNumber(), mailData.getTo(), mailData.getSubject());
-
-                log.debug("savedData.do: save_number = {}, receiver = {}, title = {}, save_time = {}",
-                        rs.getLong("save_number"), rs.getString("message_receiver"), rs.getString("message_title"), rs.getTimestamp("save_time"));
-            }
-
-            rs.close();
-            pStmt.close();
-            conn.close();
-        } catch (Exception ex) {
-            log.error("loadSavedData: 시스템 접속에 실패했습니다. 예외 = {}", ex.getMessage());
-        }
+        List<SaveModel> savedData = smail.loadSavedData(userid);
 
         model.addAttribute("savedData", savedData);
         return "save_mail";
@@ -232,67 +187,21 @@ public class WriteController {
     @GetMapping("/loadSavedMail")
     public String loadSavedMail(@RequestParam long save_number, Model model) {
         String userid = (String) session.getAttribute("userid");
-        SaveModel mailData = new SaveModel();
-
-        log.debug("loadSavedMail 호출");
-
-        try {
-            Class.forName(JdbcDriver);
-            Connection conn = DriverManager.getConnection(JdbcUrl, User, Password);
-
-            String sql = "SELECT message_receiver, message_chamzo, message_title, message_body FROM savefile WHERE userid = ? AND save_number = ?";
-            PreparedStatement pStmt = conn.prepareStatement(sql);
-            pStmt.setString(1, userid);
-            pStmt.setLong(2, save_number);
-
-            ResultSet rs = pStmt.executeQuery();
-
-            if (rs.next()) {
-                mailData.setTo(rs.getString("message_receiver"));
-                mailData.setCc(rs.getString("message_chamzo"));
-                mailData.setSubject(rs.getString("message_title"));
-                mailData.setBody(rs.getString("message_body"));
-
-                log.debug("savedData.do:  receiver = {},chamzo = {}, title = {}, message_body = {}",
-                        rs.getString("message_receiver"), rs.getString("message_chamzo"), rs.getString("message_title"), rs.getString("message_body"));
-            }
-
-            rs.close();
-            pStmt.close();
-            conn.close();
-        } catch (Exception ex) {
-            log.error("loadSavedMail: 시스템 접속에 실패했습니다. 예외 = {}", ex.getMessage());
-        }
+        SaveModel mailData = smail.loadSavedMail(userid, save_number);
 
         model.addAttribute("mailData", mailData);
-
         return "write_mail/write_mail";
     }
 
     @PostMapping("/deleteSavedMail.do")
     public String deleteSavedMailDo(@RequestParam int save_number, RedirectAttributes attrs) {
         String userid = (String) session.getAttribute("userid");
+        boolean isDeleted = smail.deleteSavedMail(userid, save_number);
 
-        try {
-            Class.forName(JdbcDriver);
-            Connection conn = DriverManager.getConnection(JdbcUrl, User, Password);
-
-            String sql = "DELETE FROM savefile WHERE userid = ? AND save_number = ?";
-            PreparedStatement pStmt = conn.prepareStatement(sql);
-            pStmt.setString(1, userid);
-            pStmt.setInt(2, save_number);
-
-            int rowsAffected = pStmt.executeUpdate();
-            if (rowsAffected > 0) {
-                attrs.addFlashAttribute("msg", "임시 저장된 메일이 삭제되었습니다.");
-            } else {
-                attrs.addFlashAttribute("msg", "임시 저장된 메일 삭제에 실패했습니다.");
-            }
-
-            pStmt.close();
-            conn.close();
-        } catch (Exception ex) {
-            log.error("deleteSavedMail: 시스템 접속에 실패했습니다. 예외 = {}", ex.getMessage());
+        if (isDeleted) {
+            attrs.addFlashAttribute("msg", "임시 저장된 메일이 삭제되었습니다.");
+        } else {
+            attrs.addFlashAttribute("msg", "임시 저장된 메일 삭제에 실패했습니다.");
         }
 
         return "redirect:/save_mail";

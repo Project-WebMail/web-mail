@@ -1,6 +1,7 @@
 package deu.cse.spring_webmail.control;
 
-import deu.cse.spring_webmail.model.UserDeleteInfo;
+import deu.cse.spring_webmail.service.JoinValidation;
+import deu.cse.spring_webmail.service.UserDeleteInfo;
 import deu.cse.spring_webmail.model.Pop3Agent;
 import deu.cse.spring_webmail.model.UserAdminAgent;
 import java.awt.image.BufferedImage;
@@ -298,7 +299,8 @@ public class SystemController {
         try {
             UserDeleteInfo del = new UserDeleteInfo();
             del.deleteUserInfo(userid);
-            model.addAttribute("popupexit", String.format("사용자(%s)의 정보를 정상적으로 삭제하고, 탈퇴하였습니다.", userid));
+            model.addAttribute("popupexit", 
+                    String.format("사용자(%s)의 정보를 정상적으로 삭제하고, 탈퇴하였습니다.", userid));
         } catch (SQLException e) {
             log.error("Error deleting user data", e);
             attrs.addFlashAttribute("msg", "사용자의 데이터 삭제 중 오류가 발생했습니다.");
