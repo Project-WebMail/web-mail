@@ -24,24 +24,33 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @NoArgsConstructor        // 기본 생성자 생성
 public class Pop3Agent {
+
     @Getter @Setter private String host;
     @Getter @Setter private String userid;
     @Getter @Setter private String password;
     @Getter @Setter private Store store;
     @Getter @Setter private String excveptionType;
     @Getter @Setter private HttpServletRequest request;
-    
+
     // 220612 LJM - added to implement REPLY
     @Getter private String sender;
     @Getter private String subject;
     @Getter private String body;
-    
+
+    private static final String IN_BOX_FOLDER = "INBOX";
+    private static final String MAIL_POP3_APOP_ENABLE = "mail.pop3.apop.enable";
+    private static final String FALSE = "false";
+    private static final String MAIL_POP3_DISABLECAPA = "mail.pop3.disablecapa";
+    private static final String TRUE = "true";
+    private static final String MAIL_DEBUG = "mail.debug";
+    private static final String MAIL_POP3_DEBUG = "mail.pop3.debug";
+
     public Pop3Agent(String host, String userid, String password) {
         this.host = host;
         this.userid = userid;
         this.password = password;
     }
-    
+
     public boolean validate() {
         boolean status = false;
 
@@ -51,12 +60,12 @@ public class Pop3Agent {
         } catch (Exception ex) {
             log.error("Pop3Agent.validate() error : " + ex);
             status = false;  // for clarity
-        } finally {
-            return status;
         }
+        return status;
+
     }
 
-    public boolean deleteMessage(int msgid, boolean really_delete) {
+    public boolean deleteMessage(int msgId, boolean reallyDelete) {
         boolean status = false;
 
         if (!connectToStore()) {
@@ -65,25 +74,23 @@ public class Pop3Agent {
 
         try {
             // Folder 설정
-//            Folder folder = store.getDefaultFolder();
-            Folder folder = store.getFolder("INBOX");
+            Folder folder = store.getFolder(IN_BOX_FOLDER);
             folder.open(Folder.READ_WRITE);
 
             // Message에 DELETED flag 설정
-            Message msg = folder.getMessage(msgid);
-            msg.setFlag(Flags.Flag.DELETED, really_delete);
+            Message msg = folder.getMessage(msgId);
+            msg.setFlag(Flags.Flag.DELETED, reallyDelete);
 
             // 폴더에서 메시지 삭제
-            // Message [] expungedMessage = folder.expunge();
             // <-- 현재 지원 안 되고 있음. 폴더를 close()할 때 expunge해야 함.
             folder.close(true);  // expunge == true
             store.close();
             status = true;
         } catch (Exception ex) {
             log.error("deleteMessage() error: {}", ex.getMessage());
-        } finally {
-            return status;
-        }
+        } 
+        
+        return status;
     }
 
     /*
@@ -100,7 +107,7 @@ public class Pop3Agent {
 
         try {
             // 메일 폴더 열기
-            Folder folder = store.getFolder("INBOX");  // 3.2
+            Folder folder = store.getFolder(IN_BOX_FOLDER);  // 3.2
             folder.open(Folder.READ_ONLY);  // 3.3
 
             // 현재 수신한 메시지 모두 가져오기
@@ -118,9 +125,9 @@ public class Pop3Agent {
         } catch (Exception ex) {
             log.error("Pop3Agent.getMessageList() : exception = {}", ex.getMessage());
             result = "Pop3Agent.getMessageList() : exception = " + ex.getMessage();
-        } finally {
-            return result;
-        }
+        } 
+        
+        return result; 
     }
 
     public String getMessage(int n) {
@@ -132,7 +139,7 @@ public class Pop3Agent {
         }
 
         try {
-            Folder folder = store.getFolder("INBOX");
+            Folder folder = store.getFolder(IN_BOX_FOLDER);
             folder.open(Folder.READ_ONLY);
 
             Message message = folder.getMessage(n);
@@ -149,21 +156,20 @@ public class Pop3Agent {
         } catch (Exception ex) {
             log.error("Pop3Agent.getMessageList() : exception = {}", ex);
             result = "Pop3Agent.getMessage() : exception = " + ex;
-        } finally {
-            return result;
-        }
+        } 
+        
+        return result;
     }
 
     private boolean connectToStore() {
         boolean status = false;
         Properties props = System.getProperties();
         // https://jakarta.ee/specifications/mail/2.1/apidocs/jakarta.mail/jakarta/mail/package-summary.html
-        props.setProperty("mail.pop3.host", host);
-        props.setProperty("mail.pop3.user", userid);
-        props.setProperty("mail.pop3.apop.enable", "false");
-        props.setProperty("mail.pop3.disablecapa", "true");  // 200102 LJM - added cf. https://javaee.github.io/javamail/docs/api/com/sun/mail/pop3/package-summary.html
-        props.setProperty("mail.debug", "false");
-        props.setProperty("mail.pop3.debug", "false");
+        
+        props.setProperty(MAIL_POP3_APOP_ENABLE, FALSE);
+        props.setProperty(MAIL_POP3_DISABLECAPA, TRUE);  // 200102 LJM - added cf. https://javaee.github.io/javamail/docs/api/com/sun/mail/pop3/package-summary.html
+        props.setProperty(MAIL_DEBUG, FALSE);
+        props.setProperty(MAIL_POP3_DEBUG, FALSE);
 
         Session session = Session.getInstance(props);
         session.setDebug(false);
@@ -174,9 +180,9 @@ public class Pop3Agent {
             status = true;
         } catch (Exception ex) {
             log.error("connectToStore 예외: {}", ex.getMessage());
-        } finally {
-            return status;
-        }
+        } 
+        
+        return status;
     }
-    
+
 }

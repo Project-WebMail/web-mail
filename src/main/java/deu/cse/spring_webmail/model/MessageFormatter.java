@@ -18,54 +18,56 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class MessageFormatter {
-    @NonNull private String userid;  // 파일 임시 저장 디렉토리 생성에 필요
+
+    @NonNull
+    private String userid;  // 파일 임시 저장 디렉토리 생성에 필요
     private HttpServletRequest request = null;
-    
-    // 220612 LJM - added to implement REPLY
-    @Getter private String sender;
-    @Getter private String subject;
-    @Getter private String body;
 
+    @Getter
+    private String sender;
+    @Getter
+    private String subject;
+    @Getter
+    private String body;
 
-   public String getMessageTable(Message[] messages) {
-    StringBuilder buffer = new StringBuilder();
+    public String getMessageTable(Message[] messages) {
+        StringBuilder buffer = new StringBuilder();
 
-    buffer.append("<table>");  // table start
-    buffer.append("<tr> "
-            + " <th> No. </th> "
-            + " <th> 보낸 사람 </th>"
-            + " <th> 제목 </th>     "
-            + " <th> 보낸 날짜 </th>   "
-            + " <th> 삭제 </th>   "
-            + " </tr>");
-
-    for (int i = messages.length - 1; i >= 0; i--) {
-        MessageParser parser = new MessageParser(messages[i], userid);
-        parser.parse(false);  // envelope 정보만 필요
-        // 메시지 헤더 포맷
+        buffer.append("<table>");  // table start
         buffer.append("<tr> "
-                + " <td id=no>" + (i + 1) + " </td> "
-                + " <td id=sender>" + parser.getFromAddress() + "</td>"
-                + " <td id=subject> "
-                + " <a href=show_message?msgid=" + (i + 1) + " title=\"메일 보기\"> "
-                + parser.getSubject() + "</a> </td>"
-                + " <td id=date>" + parser.getSentDate() + "</td>"
-                + " <td id=delete>"
-                + "<a href=\"#\" onclick=\"confirmDelete(" + (i + 1) + ")\"> 삭제 </a>" + "</td>"
+                + " <th> No. </th> "
+                + " <th> 보낸 사람 </th>"
+                + " <th> 제목 </th>     "
+                + " <th> 보낸 날짜 </th>   "
+                + " <th> 삭제 </th>   "
                 + " </tr>");
-    }
-    buffer.append("</table>");
 
-    return buffer.toString();
-}
+        for (int i = messages.length - 1; i >= 0; i--) {
+            MessageParser parser = new MessageParser(messages[i], userid);
+            parser.parse(false);  // envelope 정보만 필요
+            // 메시지 헤더 포맷
+            buffer.append("<tr> "
+                    + " <td id=no>" + (i + 1) + " </td> "
+                    + " <td id=sender>" + parser.getFromAddress() + "</td>"
+                    + " <td id=subject> "
+                    + " <a href=show_message?msgid=" + (i + 1) + " title=\"메일 보기\"> "
+                    + parser.getSubject() + "</a> </td>"
+                    + " <td id=date>" + parser.getSentDate() + "</td>"
+                    + " <td id=delete>"
+                    + "<a href=\"#\" onclick=\"confirmDelete(" + (i + 1) + ")\"> 삭제 </a>" + "</td>"
+                    + " </tr>");
+        }
+        buffer.append("</table>");
+
+        return buffer.toString();
+    }
 
     public String getMessage(Message message) {
         StringBuilder buffer = new StringBuilder();
 
-        // MessageParser parser = new MessageParser(message, userid);
         MessageParser parser = new MessageParser(message, userid, request);
         parser.parse(true);
-        
+
         sender = parser.getFromAddress();
         subject = parser.getSubject();
         body = parser.getBody();
@@ -82,13 +84,13 @@ public class MessageFormatter {
         if (attachedFile != null) {
             buffer.append("<br> <hr> 첨부파일: <a href=download"
                     + "?userid=" + this.userid
-                    + "&filename=" + attachedFile.replaceAll(" ", "%20")
+                    + "&filename=" + attachedFile.replace(" ", "%20")
                     + " target=_top> " + attachedFile + "</a> <br>");
         }
 
         return buffer.toString();
     }
-    
+
     public void setRequest(HttpServletRequest request) {
         this.request = request;
     }

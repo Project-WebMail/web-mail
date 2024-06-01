@@ -17,6 +17,7 @@ import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.internet.MimeUtility;
 import java.io.File;
+import java.nio.file.Files;
 import java.util.Properties;
 import lombok.Getter;
 import lombok.Setter;
@@ -61,39 +62,28 @@ public class SmtpAgent {
         try {
             SMTPMessage msg = new SMTPMessage(session);
 
-            // msg.setFrom(new InternetAddress(this.userid + "@" + this.host));
             msg.setFrom(new InternetAddress(this.userid));  // 200102 LJM - 테스트 목적으로 수정
-            //msg.setFrom(new InternetAddress("jongmin@deu.ac.kr"));
 
-
-            // setRecipient() can be called repeatedly if ';' or ',' exists
             if (this.to.indexOf(';') != -1) {
-                this.to = this.to.replaceAll(";", ",");
+                this.to = this.to.replace(";", ",");
             }
             msg.setRecipients(Message.RecipientType.TO, this.to);  // 200102 LJM - 수정
 
             if (this.cc.length() > 1) {
                 if (this.cc.indexOf(';') != -1) {
-                    this.cc = this.cc.replaceAll(";", ",");
+                    this.cc = this.cc.replace(";", ",");
                 }
                 msg.setRecipients(Message.RecipientType.CC, this.cc);
             }
 
-            //msg.setSubject(s);
-//            msg.setSubject(MimeUtility.encodeText(this.subj, "euc-kr", "B"));
             msg.setSubject(this.subj);
 
-            //msg.setHeader("Content-Type", "text/plain; charset=utf-8");
             msg.setHeader("User-Agent", "LJM-WM/0.1");
-            //msg.setHeader("Content-Transfer-Encoding", "8bit");
-            //msg.setAllow8bitMIME(true);
 
             // body
             MimeBodyPart mbp = new MimeBodyPart();
             // Content-Type, Content-Transfer-Encoding 설정 의미 없음.
             // 자동으로 설정되는 것 같음. - LJM 041202
-            // mbp.setHeader("Content-Type", "text/plain; charset=euc-kr");
-            // mbp.setHeader("Content-Transfer-Encoding", "8bit");
             mbp.setText(this.body);
 
             Multipart mp = new MimeMultipart();
@@ -107,7 +97,7 @@ public class SmtpAgent {
                 // 22011 LJM: 윈도우즈/우분투에 따라서 달라져야 함
                 int index = this.file1.lastIndexOf(File.separator);
                 String fileName = this.file1.substring(index + 1);
-                // "B": base64, "Q": quoted-printable
+
                 a1.setFileName(MimeUtility.encodeText(fileName, "UTF-8", "B"));
                 mp.addBodyPart(a1);
             }
@@ -120,15 +110,14 @@ public class SmtpAgent {
             // 첨부 파일 삭제함
             if (this.file1 != null) {
                 File f = new File(this.file1);
-                if (!f.delete()) {
+                if (!Files.deleteIfExists(f.toPath())) {
                     log.error(this.file1 + ": 파일 삭제가 제대로 안 됨.");
                 }
             }
             status = true;
         } catch (Exception ex) {
             log.error("sendMessage() error: {}", ex);
-        } finally {
-            return status;
         }
-    }  // sendMessage()
+            return status;
+    }  
 }

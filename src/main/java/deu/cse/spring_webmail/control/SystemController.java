@@ -42,10 +42,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Slf4j
 public class SystemController {
 
-    final String JdbcDriver = "com.mysql.cj.jdbc.Driver";
-    final String JdbcUrl = "jdbc:mysql://localhost:3306/mail?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8";
-    final String User = "jdbctester";
-    final String Password = "znqk0419";
+    public static final String JDBCDRIVER = "com.mysql.cj.jdbc.Driver";
+    public static final String JDBCURL = "jdbc:mysql://192.168.200.166:3306/mail?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8";
+    public static final String USER = "jdbctester";
+    public static final String PASSWORD = "znqk0419";
 
     @Autowired
     private ServletContext ctx;
@@ -59,11 +59,13 @@ public class SystemController {
     @Value("${root.password}")
     private String ROOT_PASSWORD;
     @Value("${admin.id}")
-    private String ADMINISTRATOR;  //  = "admin";
+    private String ADMINISTRATOR;
     @Value("${james.control.port}")
     private Integer JAMES_CONTROL_PORT;
     @Value("${james.host}")
     private String JAMES_HOST;
+    private static final String INDEX_PAGE = "index";
+    private static final String USER_ID = "userid";
 
     @GetMapping("/")
     public String index() {
@@ -73,11 +75,11 @@ public class SystemController {
 
         return "/index";
     }
-    
+
     //index 페이지 컨트롤러
     @GetMapping("/index")
     public String addIndex() {
-        return "index";
+        return INDEX_PAGE;
     }
 
     @RequestMapping(value = "/login.do", method = {RequestMethod.GET, RequestMethod.POST})
@@ -87,7 +89,7 @@ public class SystemController {
         switch (menu) {
             case CommandType.LOGIN:
                 String host = (String) request.getSession().getAttribute("host");
-                String userid = request.getParameter("userid");
+                String userid = request.getParameter(USER_ID);
                 String password = request.getParameter("passwd");
 
                 // Check the login information is valid using <<model>>Pop3Agent.
@@ -98,20 +100,18 @@ public class SystemController {
                 if (isLoginSuccess) {
                     if (isAdmin(userid)) {
                         // HttpSession 객체에 userid를 등록해 둔다.
-                        session.setAttribute("userid", userid);
+                        session.setAttribute(USER_ID, userid);
                         // response.sendRedirect("admin_menu.jsp");
                         url = "redirect:/admin_menu";
                     } else {
                         // HttpSession 객체에 userid와 password를 등록해 둔다.
-                        session.setAttribute("userid", userid);
+                        session.setAttribute(USER_ID, userid);
                         session.setAttribute("password", password);
-                        // response.sendRedirect("main_menu.jsp");
+
                         url = "redirect:/main_menu";  // URL이 http://localhost:8080/webmail/main_menu 이와 같이 됨.
                         // url = "/main_menu";  // URL이 http://localhost:8080/webmail/login.do?menu=91 이와 같이 되어 안 좋음
                     }
                 } else {
-                    // RequestDispatcher view = request.getRequestDispatcher("login_fail.jsp");
-                    // view.forward(request, response);
                     url = "redirect:/login_fail";
                 }
                 break;
@@ -189,7 +189,7 @@ public class SystemController {
             if (agent.addUser(userid, passwd)) {
                 if (vali.updateUserNick(userid, username)) {
                     model.addAttribute("popupsuccess", String.format("사용자(%s)의 회원가입이 완료되었습니다!", userid));
-                    return "index";
+                    return INDEX_PAGE;
                 }
             }
 
@@ -247,8 +247,6 @@ public class SystemController {
             UserAdminAgent agent = new UserAdminAgent(JAMES_HOST, JAMES_CONTROL_PORT, cwd,
                     ROOT_ID, ROOT_PASSWORD, ADMINISTRATOR);
 
-            // if (addUser successful)  사용자 등록 성공 팦업창
-            // else 사용자 등록 실패 팝업창
             if (agent.addUser(id, password)) {
                 attrs.addFlashAttribute("msg", String.format("사용자(%s) 추가를 성공하였습니다.", id));
             } else {
@@ -290,7 +288,7 @@ public class SystemController {
         return "redirect:/admin_menu";
     }
 
-   @PostMapping("delete_info.do")
+    @PostMapping("delete_info.do")
     public String deleteInfoDo(RedirectAttributes attrs, Model model) {
         String userid = (String) session.getAttribute("userid");
 
@@ -299,7 +297,7 @@ public class SystemController {
         try {
             UserDeleteInfo del = new UserDeleteInfo();
             del.deleteUserInfo(userid);
-            model.addAttribute("popupexit", 
+            model.addAttribute("popupexit",
                     String.format("사용자(%s)의 정보를 정상적으로 삭제하고, 탈퇴하였습니다.", userid));
         } catch (SQLException e) {
             log.error("Error deleting user data", e);
@@ -308,7 +306,6 @@ public class SystemController {
 
         return "index";
     }
-    
 
     private List<String> getUserList() {
         String cwd = ctx.getRealPath(".");
@@ -351,8 +348,8 @@ public class SystemController {
         PreparedStatement pStmt = null;
 
         try {
-            Class.forName(JdbcDriver);
-            conn = DriverManager.getConnection(JdbcUrl, User, Password);
+            Class.forName(JDBCDRIVER);
+            conn = DriverManager.getConnection(JDBCURL, USER, PASSWORD);
 
             String sql = "INSERT INTO addrbook (send_name, receive_name, nick_name) VALUES (?, ?, ?)";
             pStmt = conn.prepareStatement(sql);
@@ -407,8 +404,8 @@ public class SystemController {
         String userid = (String) session.getAttribute("userid");
 
         try {
-            Class.forName(JdbcDriver);
-            conn = DriverManager.getConnection(JdbcUrl, User, Password);
+             Class.forName(JDBCDRIVER);
+            conn = DriverManager.getConnection(JDBCURL, USER, PASSWORD);
 
             String sql = "UPDATE addrbook SET nick_name = ? WHERE send_name = ? AND receive_name = ?";
             pStmt = conn.prepareStatement(sql);
@@ -455,8 +452,8 @@ public class SystemController {
         String userid = (String) session.getAttribute("userid");
 
         try {
-            Class.forName(JdbcDriver);
-            conn = DriverManager.getConnection(JdbcUrl, User, Password);
+            Class.forName(JDBCDRIVER);
+            conn = DriverManager.getConnection(JDBCURL, USER, PASSWORD);
 
             String sql = "DELETE FROM addrbook WHERE send_name = ? AND receive_name = ?";
             pStmt = conn.prepareStatement(sql);
