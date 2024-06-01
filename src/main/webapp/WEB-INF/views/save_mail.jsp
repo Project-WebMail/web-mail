@@ -11,7 +11,6 @@
     <body>
         <%@include file="header.jspf" %>
         
-        
         <div id="main">
             <h2>임시저장 보관함</h2>
             <table border="1">
@@ -41,6 +40,13 @@
                 </c:forEach>
                 </tbody>
             </table>
+            
+             <script>
+                var popupSaveDelete = "${save_delete_popup}";
+                if (popupSaveDelete.trim() !== "") {
+                    alert(popupSaveDelete);
+                }
+                </script>
         </div>
         <%@ include file="footer.jspf" %>
     </body>

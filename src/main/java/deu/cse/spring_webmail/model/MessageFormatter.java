@@ -59,7 +59,6 @@ public class MessageFormatter {
     return buffer.toString();
 }
 
-
     public String getMessage(Message message) {
         StringBuilder buffer = new StringBuilder();
 

@@ -199,9 +199,9 @@ public class WriteController {
         boolean isDeleted = smail.deleteSavedMail(userid, save_number);
 
         if (isDeleted) {
-            attrs.addFlashAttribute("msg", "임시 저장된 메일이 삭제되었습니다.");
+            attrs.addFlashAttribute("save_delete_popup", "임시 저장된 메일이 삭제되었습니다.");
         } else {
-            attrs.addFlashAttribute("msg", "임시 저장된 메일 삭제에 실패했습니다.");
+            attrs.addFlashAttribute("save_delete_popup", "임시 저장된 메일 삭제에 실패했습니다.");
         }
 
         return "redirect:/save_mail";
