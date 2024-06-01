@@ -127,39 +127,41 @@ public class WriteController {
 
             // 1. Get the last save number for the user
             String getLastSaveNumberSql = "SELECT MAX(save_number) FROM savefile WHERE userid = ?";
-            PreparedStatement getLastSaveNumberStmt = conn.prepareStatement(getLastSaveNumberSql);
-            getLastSaveNumberStmt.setString(1, userid);
-            ResultSet rs = getLastSaveNumberStmt.executeQuery();
+            try (PreparedStatement getLastSaveNumberStmt = conn.prepareStatement(getLastSaveNumberSql)) {
+                getLastSaveNumberStmt.setString(1, userid);
+                ResultSet rs = getLastSaveNumberStmt.executeQuery();
 
-            long nextSaveNumber = 1; // default to 1
-            if (rs.next()) {
-                long lastSaveNumber = rs.getLong(1);
-                nextSaveNumber = lastSaveNumber + 1;
+                long nextSaveNumber = 1; // default to 1
+                if (rs.next()) {
+                    long lastSaveNumber = rs.getLong(1);
+                    nextSaveNumber = lastSaveNumber + 1;
+                }
+
+                String sql = "INSERT INTO savefile (userid, save_number, message_receiver, message_chamzo,"
+                        + "message_title,message_body,save_time) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+                PreparedStatement pStmt = conn.prepareStatement(sql);
+
+                // 3. Set the values
+                pStmt.setString(1, userid);
+                pStmt.setLong(2, nextSaveNumber);
+                pStmt.setString(3, to); // Check for null and set accordingly
+                pStmt.setString(4, cc); // Check for null and set accordingly
+                pStmt.setString(5, subject); // Check for null and set accordingly
+                pStmt.setString(6, body); // Check for null and set accordingly
+                pStmt.setTimestamp(7, Timestamp.valueOf(LocalDateTime.now()));
+
+                // 4. Execute the insert
+                pStmt.executeUpdate();
+                status = true;
+
+                // Close the resources
+                rs.close();
+                getLastSaveNumberStmt.close();
+                pStmt.close();
+                conn.close();
             }
 
-            String sql = "INSERT INTO savefile (userid, save_number, message_receiver, message_chamzo,"
-                    + "message_title,message_body,save_time) VALUES (?, ?, ?, ?, ?, ?, ?)";
-
-            PreparedStatement pStmt = conn.prepareStatement(sql);
-
-            // 3. Set the values
-            pStmt.setString(1, userid);
-            pStmt.setLong(2, nextSaveNumber);
-            pStmt.setString(3, to); // Check for null and set accordingly
-            pStmt.setString(4, cc); // Check for null and set accordingly
-            pStmt.setString(5, subject); // Check for null and set accordingly
-            pStmt.setString(6, body); // Check for null and set accordingly
-            pStmt.setTimestamp(7, Timestamp.valueOf(LocalDateTime.now()));
-
-            // 4. Execute the insert
-            pStmt.executeUpdate();
-            status = true;
-
-            // Close the resources
-            rs.close();
-            getLastSaveNumberStmt.close();
-            pStmt.close();
-            conn.close();
         } catch (Exception ex) {
             log.error("saveMessage.do: 시스템 접속에 실패했습니다. 예외 = {}", ex.getMessage());
         }
@@ -184,43 +186,45 @@ public class WriteController {
             Connection conn = DriverManager.getConnection(JdbcUrl, User, Password);
 
             String sql = "SELECT save_number, message_receiver, message_title, save_time FROM savefile WHERE userid = ?";
-            PreparedStatement pStmt = conn.prepareStatement(sql);
-            pStmt.setString(1, userid);
+            try (PreparedStatement pStmt = conn.prepareStatement(sql)) {
+                pStmt.setString(1, userid);
 
-            ResultSet rs = pStmt.executeQuery();
+                ResultSet rs = pStmt.executeQuery();
 
-            while (rs.next()) {
-                SaveModel mailData = new SaveModel();
-                mailData.setSaveNumber(rs.getInt("save_number"));
-                mailData.setTo(rs.getString("message_receiver"));
-                mailData.setTimestamp(rs.getTimestamp("save_time"));
+                while (rs.next()) {
+                    SaveModel mailData = new SaveModel();
+                    mailData.setSaveNumber(rs.getInt("save_number"));
+                    mailData.setTo(rs.getString("message_receiver"));
+                    mailData.setTimestamp(rs.getTimestamp("save_time"));
 
-                String messageTitle = rs.getString("message_title");
-                if (messageTitle == ""|| messageTitle.isEmpty()) {
-                    mailData.setSubject("<제목없음>");
-                } else {
-                    mailData.setSubject(messageTitle);
+                    String messageTitle = rs.getString("message_title");
+                    if ("".equals(messageTitle) || messageTitle.isEmpty()) {
+                        mailData.setSubject("<제목없음>");
+                    } else {
+                        mailData.setSubject(messageTitle);
+                    }
+
+                    String messageReceiver = rs.getString("message_receiver");
+                    if (messageReceiver == "" || messageReceiver.isEmpty()) {
+                        mailData.setTo("<수신자없음>");
+                    } else {
+                        mailData.setTo(messageReceiver);
+                    }
+
+                    savedData.add(mailData);
+
+                    log.debug("mailData: save_number = {}, receiver = {}, title = {}",
+                            mailData.getSaveNumber(), mailData.getTo(), mailData.getSubject());
+
+                    log.debug("savedData.do: save_number = {}, receiver = {}, title = {}, save_time = {}",
+                            rs.getLong("save_number"), rs.getString("message_receiver"), rs.getString("message_title"), rs.getTimestamp("save_time"));
                 }
-                
-                String messageReceiver = rs.getString("message_receiver");
-                if (messageReceiver == ""|| messageReceiver.isEmpty()) {
-                    mailData.setTo("<수신자없음>");
-                } else {
-                    mailData.setTo(messageReceiver);
-                }
 
-                savedData.add(mailData);
-
-                log.debug("mailData: save_number = {}, receiver = {}, title = {}",
-                        mailData.getSaveNumber(), mailData.getTo(), mailData.getSubject());
-
-                log.debug("savedData.do: save_number = {}, receiver = {}, title = {}, save_time = {}",
-                        rs.getLong("save_number"), rs.getString("message_receiver"), rs.getString("message_title"), rs.getTimestamp("save_time"));
+                rs.close();
+                pStmt.close();
+                conn.close();
             }
 
-            rs.close();
-            pStmt.close();
-            conn.close();
         } catch (Exception ex) {
             log.error("loadSavedData: 시스템 접속에 실패했습니다. 예외 = {}", ex.getMessage());
         }
@@ -241,25 +245,25 @@ public class WriteController {
             Connection conn = DriverManager.getConnection(JdbcUrl, User, Password);
 
             String sql = "SELECT message_receiver, message_chamzo, message_title, message_body FROM savefile WHERE userid = ? AND save_number = ?";
-            PreparedStatement pStmt = conn.prepareStatement(sql);
-            pStmt.setString(1, userid);
-            pStmt.setLong(2, save_number);
+            try (PreparedStatement pStmt = conn.prepareStatement(sql)) {
+                pStmt.setString(1, userid);
+                pStmt.setLong(2, save_number);
 
-            ResultSet rs = pStmt.executeQuery();
+                ResultSet rs = pStmt.executeQuery();
 
-            if (rs.next()) {
-                mailData.setTo(rs.getString("message_receiver"));
-                mailData.setCc(rs.getString("message_chamzo"));
-                mailData.setSubject(rs.getString("message_title"));
-                mailData.setBody(rs.getString("message_body"));
+                if (rs.next()) {
+                    mailData.setTo(rs.getString("message_receiver"));
+                    mailData.setCc(rs.getString("message_chamzo"));
+                    mailData.setSubject(rs.getString("message_title"));
+                    mailData.setBody(rs.getString("message_body"));
 
-                log.debug("savedData.do:  receiver = {},chamzo = {}, title = {}, message_body = {}",
-                        rs.getString("message_receiver"), rs.getString("message_chamzo"), rs.getString("message_title"), rs.getString("message_body"));
+                    log.debug("savedData.do:  receiver = {},chamzo = {}, title = {}, message_body = {}",
+                            rs.getString("message_receiver"), rs.getString("message_chamzo"), rs.getString("message_title"), rs.getString("message_body"));
+                }
+                rs.close();
+                pStmt.close();
+                conn.close();
             }
-
-            rs.close();
-            pStmt.close();
-            conn.close();
         } catch (Exception ex) {
             log.error("loadSavedMail: 시스템 접속에 실패했습니다. 예외 = {}", ex.getMessage());
         }

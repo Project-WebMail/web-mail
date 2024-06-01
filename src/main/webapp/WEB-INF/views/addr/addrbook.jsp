@@ -34,7 +34,7 @@
             <tbody>
                 <%
                 final String JdbcDriver = "com.mysql.cj.jdbc.Driver";
-                final String JdbcUrl = "jdbc:mysql://localhost:3306/mail?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8";
+                final String JdbcUrl = "jdbc:mysql://192.168.200.166:3306/mail?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8";
                 final String User = "jdbctester";
                 final String Password = "znqk0419";
                 String userid = (String) session.getAttribute("userid");

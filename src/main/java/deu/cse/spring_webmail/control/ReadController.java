@@ -48,11 +48,11 @@ public class ReadController {
     @Autowired
     private HttpServletRequest request;
     @Value("${file.download_folder}")
-    private String DOWNLOAD_FOLDER;
+    private String downloadFolder;
 
     @GetMapping("/show_message")
     public String showMessage(@RequestParam Integer msgid, Model model) {
-        log.debug("download_folder = {}", DOWNLOAD_FOLDER);
+        log.debug("download_folder = {}", downloadFolder);
         
         Pop3Agent pop3 = new Pop3Agent();
         pop3.setHost((String) session.getAttribute("host"));
@@ -79,7 +79,7 @@ public class ReadController {
         }
         
         // 1. 내려받기할 파일의 기본 경로 설정
-        String basePath = ctx.getRealPath(DOWNLOAD_FOLDER) + File.separator + userId;
+        String basePath = ctx.getRealPath(downloadFolder) + File.separator + userId;
 
         // 2. 파일의 Content-Type 찾기
         Path path = Paths.get(basePath + File.separator + fileName);

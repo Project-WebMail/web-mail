@@ -28,10 +28,6 @@ public class JoinValidation {
     final String User = "jdbctester";
     final String Password = "znqk0419";
 
-    public JoinValidation() {
-
-    }
-
     public boolean updateUserNick(String username, String nn) {
         boolean success = false;
 
@@ -51,16 +47,13 @@ public class JoinValidation {
             if (rowsAffected > 0) {
                 success = true;
                 log.debug("updateUserEmail: 이름 업로드 성공");
-
             }
-
             // 리소스 닫기
             pstmt.close();
             conn.close();
         } catch (Exception ex) {
             log.error("updateUserEmail: 시스템 접속에 실패했습니다. 예외 = {}", ex.getMessage());
         }
-
         return success;
     }
 
@@ -89,10 +82,9 @@ public class JoinValidation {
         } catch (Exception ex) {
             log.error("joinIdCheck 예외: {}", ex.getMessage());
             status = false;
-        } finally {
-            // 5: 상태 반환
-            return status;
         }
+        // 5: 상태 반환
+          return status;
     }
 
     public static boolean isNotBlank(String value) {
