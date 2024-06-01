@@ -1,6 +1,7 @@
 package deu.cse.spring_webmail.service;
 
 import deu.cse.spring_webmail.model.SaveModel;
+import deu.cse.spring_webmail.model.SaveModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -63,7 +64,8 @@ public class SaveMail {
                         mailData.getSaveNumber(), mailData.getTo(), mailData.getSubject());
 
                 log.debug("savedData.do: save_number = {}, receiver = {}, title = {}, save_time = {}",
-                        rs.getLong("save_number"), rs.getString("message_receiver"), rs.getString("message_title"), rs.getTimestamp("save_time"));
+                        rs.getLong("save_number"), rs.getString("message_receiver"), rs.getString("message_title"), 
+                        rs.getTimestamp("save_time"));
             }
 
             rs.close();
@@ -85,7 +87,8 @@ public class SaveMail {
             Class.forName(JdbcDriver);
             Connection conn = DriverManager.getConnection(JdbcUrl, User, Password);
 
-            String sql = "SELECT message_receiver, message_chamzo, message_title, message_body FROM savefile WHERE userid = ? AND save_number = ?";
+            String sql = "SELECT message_receiver, message_chamzo, message_title, message_body FROM savefile "
+                    + "WHERE userid = ? AND save_number = ?";
             PreparedStatement pStmt = conn.prepareStatement(sql);
             pStmt.setString(1, userid);
             pStmt.setLong(2, saveNumber);
@@ -99,7 +102,8 @@ public class SaveMail {
                 mailData.setBody(rs.getString("message_body"));
 
                 log.debug("savedData.do:  receiver = {}, chamzo = {}, title = {}, message_body = {}",
-                        rs.getString("message_receiver"), rs.getString("message_chamzo"), rs.getString("message_title"), rs.getString("message_body"));
+                        rs.getString("message_receiver"), rs.getString("message_chamzo"), rs.getString("message_title"), 
+                        rs.getString("message_body"));
             }
 
             rs.close();

@@ -176,7 +176,7 @@ public class WriteController {
     }
 
 @GetMapping("/save_mail")
-    public String loadSavedData(Model model) {
+    public String loadSavedDataDo(Model model) {
         String userid = (String) session.getAttribute("userid");
         List<SaveModel> savedData = smail.loadSavedData(userid);
 
@@ -185,7 +185,7 @@ public class WriteController {
     }
 
     @GetMapping("/loadSavedMail")
-    public String loadSavedMail(@RequestParam long save_number, Model model) {
+    public String loadSavedMailDo(@RequestParam long save_number, Model model) {
         String userid = (String) session.getAttribute("userid");
         SaveModel mailData = smail.loadSavedMail(userid, save_number);
 
